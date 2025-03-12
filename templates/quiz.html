@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enregistrement Audio</title>
+    <script>
+        let isRecording = false;
+
+        function startRecording() {
+            if (!isRecording) {
+                fetch('/start_recording')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.message);
+                        isRecording = true;
+                        document.getElementById("startButton").disabled = true;
+                        document.getElementById("stopButton").disabled = false;
+                    });
+            }
+        }
+
+        function stopRecording() {
+            if (isRecording) {
+                fetch('/stop_recording')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.message);
+                        if (data.transcription_id) {
+                            document.getElementById('transcription_id').textContent = data.transcription_id;
+                        } else {
+                            alert("Erreur lors de la transcription");
+                        }
+                        isRecording = false;
+                        document.getElementById("startButton").disabled = false;
+                        document.getElementById("stopButton").disabled = true;
+                    });
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Enregistrement Audio</h1>
+    <button id="startButton" onclick="startRecording()">Démarrer l'enregistrement</button>
+    <button id="stopButton" onclick="stopRecording()" disabled>Arrêter l'enregistrement</button>
+    <p>ID du cours : <span id="transcription_id"></span></p>
+</body>
+</html>

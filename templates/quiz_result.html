@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résultats du Quiz</title>
+</head>
+<body>
+    <h1>Résultats du Quiz</h1>
+    <p>Votre score: {{ score }} / {{ total }}</p>
+    <h3>Corrections:</h3>
+    <ul>
+        {% for i, question in enumerate(questions) %}
+            <li>
+                <strong>{{ question['question'] }}</strong><br>
+                <em>Votre réponse: {{ answers[i] }}</em><br>
+                <em>Réponse correcte: {{ question['answer'] }}</em>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('home') }}">Retour à l'accueil</a>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Page d'Accueil</title>
+</head>
+<body>
+    <h1>Bienvenue sur la page d'accueil</h1>
+
+    <h2>Choisissez votre rôle</h2>
+    <form action="/register" method="get">
+        <button type="submit" name="role" value="prof">Professeur</button>
+        <button type="submit" name="role" value="etudiant">Étudiant</button>
+    </form>
+
+    <h2>Ou connectez-vous</h2>
+    <form action="/login" method="post">
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Mot de passe" required>
+        <button type="submit">Se connecter</button>
+    </form>
+
+    <a href="/register">Pas de compte ? Créez-en un</a>
+</body>
+</html>

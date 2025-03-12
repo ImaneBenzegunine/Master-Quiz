@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrer l'ID de transcription</title>
+</head>
+<body>
+    <h2>Entrer l'ID de transcription</h2>
+    <form action="{{ url_for('validate_id') }}" method="POST">
+        <label for="transcription_id">ID :</label>
+        <input type="text" id="transcription_id" name="transcription_id" required>
+        <button type="submit">Valider</button>
+    </form>
+</body>
+</html>
