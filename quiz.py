@@ -9,9 +9,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
-import requests
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from groq import Groq
 from time import sleep
+from flask import send_file
+
 
 app = Flask(__name__)
 CORS(app)
@@ -22,7 +25,7 @@ CHANNELS = 1  # Mono
 FILENAME = "audio_recording.wav"  # Fichier WAV temporaire
 TEXT_FILENAME = "transcription.txt"  # Fichier texte pour stocker la transcription
 audio_data = None  # Variable globale pour l'audio en temps réel
-
+api_key = "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"
 # Enregistrement en cours
 is_recording = False
 audio_thread = None
@@ -75,12 +78,6 @@ def convertir_audio_en_texte(fichier_wav):
         print("Erreur lors de la transcription :", str(e))
         return None
 
-'''# transcription table
-class Transcription(db.Model):
-    id = db.Column(db.String(36), primary_key=True)  # UUID stocké en string
-    text = db.Column(db.Text, nullable=False)  # Texte transcrit
-    professeur_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ID du professeur
-'''
 # transcription table
 class Transcription(db.Model):
     id = db.Column(db.String(36), primary_key=True)  # UUID stocké en string
@@ -120,6 +117,20 @@ def send_request_to_groq(api_key, transcribed_text, retries=3, timeout=10):
                 return None
     return None
 
+def generate_summary_from_text(transcribed_text, api_key):
+    groq_client = Groq(api_key=api_key)
+    try:
+        chat_completion = groq_client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "Tu es un assistant qui génère des résumés utiles."},
+                {"role": "user", "content": f"Peux-tu résumer ce texte de manière concise ?\n\n{transcribed_text}"}
+            ],
+            model="llama-3.3-70b-versatile",  # Ou tout autre modèle de résumé que tu utilises
+        )
+        return chat_completion.choices[0].message.content
+    except Exception as e:
+        print(f"Erreur lors de la génération du résumé : {e}")
+        return None
 
 
 def generate_quiz_from_text(transcribed_text, api_key, retries=3, timeout=10):
@@ -134,14 +145,24 @@ def generate_quiz_from_text(transcribed_text, api_key, retries=3, timeout=10):
         print("Erreur lors de la génération du quiz.")
         return None
 
+def generate_pdf_with_summary(summary, filename="resume.pdf"):
+    c = canvas.Canvas(filename, pagesize=letter)
+    width, height = letter
 
-def read_text_from_file(file_path):
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-    except Exception as e:
-        print(f"Erreur lors de la lecture du fichier : {e}")
-        return None
+    # Title
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(100, height - 40, "Résumé de la transcription")
+
+    # Résumé
+    c.setFont("Helvetica", 12)
+    y_position = height - 80
+    for line in summary.split("\n"):
+        c.drawString(100, y_position, line)
+        y_position -= 15
+
+    # Sauvegarder le PDF
+    c.save()
+
 @app.route('/')
 def home():
     return render_template("home.html")
@@ -251,28 +272,7 @@ def stop_recording():
 
     else:
         return jsonify({"error": "Aucun enregistrement en cours."}), 400
-'''
-@app.route('/quiz1/<transcription_id>', methods=['GET'])
-@login_required
-def quiz1(transcription_id):
-    if current_user.role != "etudiant":
-        return redirect(url_for('home'))
 
-    transcription = db.session.get(Transcription, int(transcription_id))
-    text = read_text_from_file("C:/Users/bouat/PycharmProjects/data_girls/transcription.txt")
-    if not transcription:
-        return "ID invalide. Veuillez réessayer.", 400
-
-    # Récupérer les questions générées à partir du texte transcrit
-    api_key = "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"
-    quiz_questions = generate_quiz_from_text(text, api_key)
-
-    if not quiz_questions:
-        return "Erreur dans la génération du quiz.", 500
-
-    # Passer les questions générées au template
-    return render_template('quiz1.html', transcription=transcription, questions=quiz_questions)
-'''
 @app.route('/quiz1/<transcription_id>', methods=['GET'])
 @login_required
 def quiz1(transcription_id):
@@ -288,7 +288,7 @@ def quiz1(transcription_id):
     text = transcription.text
 
     # Générer les questions à partir du texte transcrit
-    api_key = "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"
+
     quiz_questions = generate_quiz_from_text(text, api_key)
 
     if not quiz_questions:
@@ -315,6 +315,29 @@ def submit_quiz():
     return render_template('quiz_result.html', score=score, total=len(quiz_questions), answers=answers,
                            questions=quiz_questions)
 
+@app.route('/generate_summary_pdf/<transcription_id>', methods=['GET'])
+@login_required
+def generate_summary_pdf(transcription_id):
+    if current_user.role != "etudiant":
+        return redirect(url_for('home'))
+
+    # Récupérer la transcription par son ID
+    transcription = db.session.get(Transcription, transcription_id)
+    if not transcription:
+        return "ID invalide. Veuillez réessayer.", 400
+
+    # Générer un résumé à partir du texte transcrit
+    summary = generate_summary_from_text(transcription.text, api_key)
+
+    if not summary:
+        return "Erreur lors de la génération du résumé.", 500
+
+    # Générer le PDF avec le résumé
+    filename = "resume.pdf"
+    generate_pdf_with_summary(summary, filename)
+
+    # Retourner le PDF au format téléchargement
+    return send_file(filename, as_attachment=True)
 
 @app.route('/enter_id', methods=['GET'])
 @login_required
@@ -330,14 +353,17 @@ def validate_id():
     if current_user.role != "etudiant":
         return redirect(url_for('home'))
 
+    # Récupérer l'ID de transcription du formulaire
     transcription_id = request.form.get('transcription_id')
+
+    # Récupérer la transcription depuis la base de données
     transcription = db.session.get(Transcription, transcription_id)
 
     if transcription:
-        return redirect(url_for('quiz1', transcription_id=transcription_id))
+        # Passer la transcription à la vue `enter_id` via `transcription` dans le contexte
+        return render_template('enter_id.html', transcription=transcription)
     else:
         return "ID invalide. Veuillez réessayer.", 400
-
 
 
 @app.route('/logout')

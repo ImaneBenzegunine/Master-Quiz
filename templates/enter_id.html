@@ -7,10 +7,25 @@
 </head>
 <body>
     <h2>Entrer l'ID de transcription</h2>
+
+    <!-- Formulaire pour entrer l'ID -->
     <form action="{{ url_for('validate_id') }}" method="POST">
         <label for="transcription_id">ID :</label>
         <input type="text" id="transcription_id" name="transcription_id" required>
         <button type="submit">Valider</button>
     </form>
+
+    {% if transcription %}
+
+    <!-- Bouton pour télécharger le résumé PDF -->
+    <form action="{{ url_for('generate_summary_pdf', transcription_id=transcription.id) }}" method="get">
+        <button type="submit">Télécharger le résumé PDF</button>
+    </form>
+
+    <!-- Bouton pour tester les connaissances avec le quiz -->
+    <form action="{{ url_for('quiz1', transcription_id=transcription.id) }}" method="get">
+        <button type="submit">Tester vos connaissances</button>
+    </form>
+    {% endif %}
 </body>
 </html>
