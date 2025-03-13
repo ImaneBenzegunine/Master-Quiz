@@ -153,7 +153,7 @@
     </div>
     {% endfor %}
 
-    <a class="result-link" href="{{ url_for('quiz1', transcription_id=transcription.id) }}">Reprendre le quiz</a>
+    <a class="result-link" href="{{ url_for('quiz', transcription_id=transcription.id) }}">Reprendre le quiz</a>
 
     {% if current_user.is_authenticated %}
     <div class="logout-container">

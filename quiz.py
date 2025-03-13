@@ -260,18 +260,18 @@ def login():
         print(f"Utilisateur connecté : {user.email}, rôle : {user.role}")  # Vérifier le rôle dans la console
 
         if user.role == "prof":
-            return redirect(url_for('quiz'))
+            return redirect(url_for('record'))
         else:
             return redirect(url_for('enter_id'))  # Si c'est un étudiant, il doit aller vers enter_id
 
     return render_template("login.html")
 
-@app.route('/quiz')
+@app.route('/record')
 @login_required
-def quiz():
+def record():
     if current_user.role != "prof":
         return redirect(url_for('home'))
-    return render_template("quiz.html")
+    return render_template("record.html")
 
 # API pour commencer l'enregistrement
 @app.route('/start_recording', methods=['GET'])
@@ -332,9 +332,9 @@ def stop_recording():
 
     else:
         return jsonify({"error": "Aucun enregistrement en cours."}), 400
-@app.route('/quiz1/<transcription_id>', methods=['GET'])
+@app.route('/quiz/<transcription_id>', methods=['GET'])
 @login_required
-def quiz1(transcription_id):
+def quiz(transcription_id):
     if current_user.role != "etudiant":
         return redirect(url_for('home'))
 
@@ -358,7 +358,7 @@ def quiz1(transcription_id):
 
     session['quiz_questions'] = quiz_questions
 
-    return render_template('quiz1.html', transcription=transcription, questions=quiz_questions)
+    return render_template('quiz.html', transcription=transcription, questions=quiz_questions)
 
 @app.route('/submit_quiz', methods=['POST'])
 @login_required

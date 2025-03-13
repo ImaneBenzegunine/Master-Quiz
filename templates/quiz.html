@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Record</title>
+    <title>Quiz</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/q.jpg') }}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -64,83 +63,65 @@
             justify-content: center;
             margin-bottom: 30px;
         }
-        .logout-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-        }
 
-        .logout-link {
-            color: #4CAF50;
-            text-decoration: none;
+        form {
             font-size: 1.2em;
+            text-align: left;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        .logout-link:hover {
-            color: #2E8B57;
+        label {
+            display: block;
+            margin: 10px 0;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #45a049;
         }
     </style>
-    <script>
-        let isRecording = false;
-
-        function startRecording() {
-            if (!isRecording) {
-                fetch('/start_recording')
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(data.message);
-                        isRecording = true;
-                        document.getElementById("startButton").disabled = true;
-                        document.getElementById("stopButton").disabled = false;
-                    });
-            }
-        }
-
-        function stopRecording() {
-            if (isRecording) {
-                fetch('/stop_recording')
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(data.message);
-                        if (data.transcription_id) {
-                            document.getElementById('transcription_id').textContent = data.transcription_id;
-                        } else {
-                            alert("Erreur lors de la transcription");
-                        }
-                        isRecording = false;
-                        document.getElementById("startButton").disabled = false;
-                        document.getElementById("stopButton").disabled = true;
-                    });
-            }
-        }
-    </script>
 </head>
 <body>
-
-    <!-- Logo teacher before the title -->
     <div class="header">
-        <img src="/static/images/teacher.png" class="logo" alt="Teacher Logo">
-        <h1>Enregistrement Audio</h1>
+        <img src="/static/images/reading.png" class="logo" alt="Teacher Logo">
+        <h1>Quiz </h1>
     </div>
+    <form action="{{ url_for('submit_quiz') }}" method="POST">
+        {% for question in questions %}
+            <div>
+                <p><strong>{{ question.question }}</strong></p>
+                <!-- Stocke l'index de la question dans une variable -->
+                {% set question_index = loop.index0 %}
 
-    <!-- Boutons avec icônes -->
-    <button id="startButton" class="btn" onclick="startRecording()">
-        <i class="fas fa-microphone"></i>
-    </button>
-
-    <button id="stopButton" class="btn" onclick="stopRecording()" disabled>
-        <i class="fas fa-stop"></i>
-    </button>
-
-    <!-- Affichage de l'ID de transcription -->
-    <div class="transcription-info">
-        <p>ID du cours : <span id="transcription_id" class="transcription-id"></span></p>
-    </div>
+                {% for choice in question.choices %}
+                    <label>
+                        <!-- Utilise la variable question_index pour le name -->
+                        <input type="radio" name="question_{{ question_index }}" value="{{ choice }}" required>
+                        {{ choice }}
+                    </label><br>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        <!-- Correction du name et vérification de la valeur -->
+        <input type="hidden" name="transcription_id" value="{{ transcription.id }}">
+        <button type="submit">Soumettre</button>
+    </form>
     {% if current_user.is_authenticated %}
-        <div class="logout-container">
-            <a class="logout-link" href="{{ url_for('logout') }}">Déconnexion</a>
+        <div style="position: fixed; top: 20px; right: 20px;">
+            <a href="{{ url_for('logout') }}" style="color: #4CAF50; text-decoration: none;">Déconnexion</a>
         </div>
-    {% endif %}
-
+    {%endif%}
 </body>
 </html>

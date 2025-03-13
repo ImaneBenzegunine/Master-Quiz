@@ -108,7 +108,7 @@
     </form>
 
     <!-- Bouton pour tester les connaissances avec le quiz -->
-    <form action="{{ url_for('quiz1', transcription_id=transcription.id) }}" method="get">
+    <form action="{{ url_for('quiz', transcription_id=transcription.id) }}" method="get">
         <button type="submit">Tester vos connaissances</button>
     </form>
     {% endif %}
