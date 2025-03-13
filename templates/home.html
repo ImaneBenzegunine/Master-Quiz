@@ -2,7 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Page d'Accueil</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizz Master</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/q.jpg') }}">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,6 +38,7 @@
             padding: 15px 30px;
             font-size: 1.2em;
             background-color: #4CAF50;
+            margin-top: 30px;
             color: white;
             border: none;
             border-radius: 5px;
@@ -50,15 +53,47 @@
         button:active {
             transform: scale(0.98);
         }
+        img {
+            width: 20px; /* Adjust the width */
+            height: 20px; /* Adjust the height */
+        }
+        .login-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+        .login-link {
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+
+        .login-link:hover {
+            color: #2E8B57;
+        }
     </style>
 </head>
 <body>
-    <h1>Bienvenue sur la page d'accueil</h1>
+    <h1>Quizz Master</h1>
 
-    <h2>Choisissez votre rôle</h2>
+    <p>Un espace interactif où les professeurs enregistrent leurs cours et les étudiants renforcent leurs connaissances avec des quiz engageants </p>
     <form action="/register" method="get">
-        <button type="submit" name="role" value="prof">Professeur</button>
-        <button type="submit" name="role" value="etudiant">Étudiant</button>
+        <button type="submit" onclick="setRole('prof')">
+            <img src="/static/images/teacher.png"> Professeur
+        </button>
+        <button type="submit" onclick="setRole('etudiant')">
+            <img src="/static/images/reading.png"> Étudiant
+        </button>
+        <input type="hidden" name="role" id="role">
     </form>
+    <div class="login-container">
+        <a class="login-link" href="{{ url_for('login') }}">Connexion</a>
+    </div>
+    <script>
+        function setRole(role) {
+            document.getElementById("role").value = role;
+        }
+    </script>
+
 </body>
 </html>

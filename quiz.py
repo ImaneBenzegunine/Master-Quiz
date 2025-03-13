@@ -1,3 +1,5 @@
+import logging
+
 import sounddevice as sd
 import wave
 import threading
@@ -22,7 +24,6 @@ CORS(app)
 SAMPLERATE = 44100  # Taux d'échantillonnage, 44100 Hz
 CHANNELS = 1  # Mono
 FILENAME = "audio_recording.wav"  # Fichier WAV temporaire
-TEXT_FILENAME = "transcription.txt"  # Fichier texte pour stocker la transcription
 audio_data = None  # Variable globale pour l'audio en temps réel
 api_key = "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"
 # Enregistrement en cours
@@ -74,7 +75,7 @@ def convertir_audio_en_texte(fichier_wav):
             print("Texte transcrit :", texte)
             return texte
     except Exception as e:
-        print("Erreur lors de la transcription :", str(e))
+        logging.error("Erreur lors de la transcription :", str(e))
         return None
 
 # transcription table
@@ -204,7 +205,7 @@ def generate_pdf_with_summary(summary, filename="resume.pdf"):
     normal_style.alignment = 4  # Justifier le texte
 
     # Titre "Résumé"
-    title = Paragraph("Résumé", title_style)
+    title = Paragraph("Cours", title_style)
 
     # Créer le résumé en tant que paragraphe
     paragraph = Paragraph(summary, normal_style)
@@ -217,13 +218,21 @@ def home():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    error=None
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
         role = request.form.get('role')
 
+        if not role:
+            role = "etudiant"
         if User.query.filter_by(email=email).first():
-            return "Cet email est déjà utilisé."
+            error = "Cet email est déjà utilisé."
+        if error:
+            return render_template("register.html",
+                                   error=error,
+                                   email=email,
+                                   code=password)
 
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
         new_user = User(email=email, password=hashed_password, role=role)
@@ -235,6 +244,7 @@ def register():
     return render_template("register.html")
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error=None
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -242,7 +252,8 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if not user or not check_password_hash(user.password, password):
-            return "Email ou mot de passe incorrect"
+            error = "Email ou mot de passe incorrect"
+            return render_template("login.html", error=error, email=email)
 
         login_user(user)
 
@@ -453,7 +464,7 @@ def validate_id():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True)
