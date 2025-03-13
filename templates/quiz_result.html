@@ -4,20 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Résultats du Quiz</title>
+    <style>
+        .correct { color: green; font-weight: bold; }
+        .incorrect { color: red; font-weight: bold; }
+    </style>
 </head>
 <body>
     <h1>Résultats du Quiz</h1>
-    <p>Votre score: {{ score }} / {{ total }}</p>
-    <h3>Corrections:</h3>
-    <ul>
-        {% for i, question in enumerate(questions) %}
-            <li>
-                <strong>{{ question['question'] }}</strong><br>
-                <em>Votre réponse: {{ answers[i] }}</em><br>
-                <em>Réponse correcte: {{ question['answer'] }}</em>
+    <p>Score final : {{ score }}/{{ total }}</p>
+    <p>Pourcentage: {{ percentage|round(2) }}%</p>
+
+    {% for result in results %}
+    <div class="question-result">
+        <h3>Question {{ loop.index }}:</h3>
+        <p>{{ result.question_text }}</p>
+
+        <h4>Vos réponses :</h4>
+        <ul>
+            {% for choice in result.choices %}
+            <li class="
+                {% if choice == result.user_answer %}
+                    {% if choice == result.correct_answer %}correct{% else %}incorrect{% endif %}
+                {% endif %}">
+                {{ choice }}
+                {% if choice == result.correct_answer %} (Correct){% endif %}
             </li>
-        {% endfor %}
-    </ul>
-    <a href="{{ url_for('home') }}">Retour à l'accueil</a>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+
+    <a href="{{ url_for('quiz1', transcription_id=transcription.id) }}">Reprendre le quiz</a>
 </body>
 </html>

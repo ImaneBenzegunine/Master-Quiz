@@ -4,6 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enregistrement Audio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 40px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #4CAF50;
+        }
+
+        .btn {
+            font-size: 40px;
+            padding: 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 20px;
+        }
+
+        .btn:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        .transcription-info {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .transcription-id {
+            font-weight: bold;
+            color: #2E8B57;
+        }
+    </style>
     <script>
         let isRecording = false;
 

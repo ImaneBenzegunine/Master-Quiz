@@ -1,19 +1,18 @@
 import sounddevice as sd
 import wave
 import threading
-import os
-import uuid
 import speech_recognition as sr
-from flask import Flask, jsonify, request, render_template, redirect, url_for, session
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 from groq import Groq
 from time import sleep
-from flask import send_file
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+
 
 
 app = Flask(__name__)
@@ -117,6 +116,21 @@ def send_request_to_groq(api_key, transcribed_text, retries=3, timeout=10):
                 return None
     return None
 
+def generate_quiz_from_text(transcribed_text, api_key):
+    groq_client = Groq(api_key=api_key)
+    try:
+        chat_completion = groq_client.chat.completions.create(
+    messages=[
+        {"role": "system", "content": "Tu es un assistant qui génère des quiz éducatifs."},
+        {"role": "user", "content": f"Génère un quiz basé sur le texte suivant. Pour chaque question, fournis quatre choix de réponse et indique la réponse correcte. Utilise le format suivant pour chaque question :\n\nQuestion : [la question]\nChoices : [choix 1, choix 2, choix 3, choix 4]\nCorrect_answer : [la bonne réponse]\n\nTexte :\n{transcribed_text}"}
+    ],
+    model="llama-3.3-70b-versatile",
+)
+        return chat_completion.choices[0].message.content
+    except Exception as e:
+        print(f"Erreur lors de la génération du résumé : {e}")
+        return None
+
 def generate_summary_from_text(transcribed_text, api_key):
     groq_client = Groq(api_key=api_key)
     try:
@@ -132,37 +146,71 @@ def generate_summary_from_text(transcribed_text, api_key):
         print(f"Erreur lors de la génération du résumé : {e}")
         return None
 
+def parse_quiz_response(response_data):
+    questions = []
+    lines = response_data.split("\n")
+    current_question = None
 
-def generate_quiz_from_text(transcribed_text, api_key, retries=3, timeout=10):
-    # Appeler la fonction générique pour envoyer la requête avec le texte transcrit
-    response_data = send_request_to_groq(api_key, transcribed_text, retries=retries, timeout=timeout)
+    print("Début du parsing de la réponse...")  # Log de début
+    print("Réponse brute :", response_data)  # Afficher la réponse brute
 
-    if response_data:
-        # Assurer que la réponse est bien formatée
-        questions = response_data.split("\n")  # Cela dépend de la réponse que l'API renvoie
-        return questions  # Retourner les questions générées sous forme de liste
-    else:
-        print("Erreur lors de la génération du quiz.")
-        return None
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        print("Traitement de la ligne :", line)  # Log pour chaque ligne
+
+        if line.startswith("Question :"):
+            if current_question:
+                questions.append(current_question)
+            current_question = {
+                "question": line.split("Question :")[1].strip(),
+                "choices": [],
+                "answer": ""
+            }
+            print("Nouvelle question détectée :", current_question["question"])  # Log pour la question
+        elif line.startswith("Choices :"):
+            choices = line.split("Choices :")[1].strip().split(", ")
+            current_question["choices"] = choices
+            print("Choix détectés :", choices)  # Log pour les choix
+        elif line.startswith("Correct_answer :"):
+            current_question["answer"] = line.split("Correct_answer :")[1].strip()
+            print("Réponse correcte détectée :", current_question["answer"])  # Log pour la réponse
+
+    if current_question:
+        questions.append(current_question)
+
+    print("Parsing terminé. Questions générées :", questions)  # Log final
+    return questions
 
 def generate_pdf_with_summary(summary, filename="resume.pdf"):
-    c = canvas.Canvas(filename, pagesize=letter)
-    width, height = letter
+    # Créer un document PDF
+    doc = SimpleDocTemplate(filename, pagesize=letter, rightMargin=50, leftMargin=50, topMargin=50, bottomMargin=50)
 
-    # Title
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(100, height - 40, "Résumé de la transcription")
+    # Appliquer les styles pour le texte
+    styles = getSampleStyleSheet()
 
-    # Résumé
-    c.setFont("Helvetica", 12)
-    y_position = height - 80
-    for line in summary.split("\n"):
-        c.drawString(100, y_position, line)
-        y_position -= 15
+    # Style pour le titre
+    title_style = styles['Title']
+    title_style.fontName = 'Helvetica-Bold'
+    title_style.fontSize = 16
 
-    # Sauvegarder le PDF
-    c.save()
+    # Style pour le résumé
+    normal_style = styles['Normal']
+    normal_style.fontName = 'Helvetica'
+    normal_style.fontSize = 12
+    normal_style.leading = 14  # Espace entre les lignes
+    normal_style.alignment = 4  # Justifier le texte
 
+    # Titre "Résumé"
+    title = Paragraph("Résumé", title_style)
+
+    # Créer le résumé en tant que paragraphe
+    paragraph = Paragraph(summary, normal_style)
+
+    # Construire le document avec le titre et le résumé
+    doc.build([title, paragraph])
 @app.route('/')
 def home():
     return render_template("home.html")
@@ -185,7 +233,6 @@ def register():
         return redirect(url_for('login'))
 
     return render_template("register.html")
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -199,10 +246,12 @@ def login():
 
         login_user(user)
 
+        print(f"Utilisateur connecté : {user.email}, rôle : {user.role}")  # Vérifier le rôle dans la console
+
         if user.role == "prof":
             return redirect(url_for('quiz'))
         else:
-            return redirect(url_for('enter_id'))
+            return redirect(url_for('enter_id'))  # Si c'est un étudiant, il doit aller vers enter_id
 
     return render_template("login.html")
 
@@ -272,48 +321,81 @@ def stop_recording():
 
     else:
         return jsonify({"error": "Aucun enregistrement en cours."}), 400
-
 @app.route('/quiz1/<transcription_id>', methods=['GET'])
 @login_required
 def quiz1(transcription_id):
     if current_user.role != "etudiant":
         return redirect(url_for('home'))
 
-    # Récupérer la transcription par son ID
     transcription = db.session.get(Transcription, transcription_id)
     if not transcription:
         return "ID invalide. Veuillez réessayer.", 400
 
-    # Récupérer le texte transcrit de la base de données
     text = transcription.text
+    quiz_response = generate_quiz_from_text(text, api_key)
 
-    # Générer les questions à partir du texte transcrit
+    if not quiz_response:
+        return "Erreur lors de la génération du quiz.", 500
 
-    quiz_questions = generate_quiz_from_text(text, api_key)
+    # Vérifier que quiz_response est une chaîne de caractères
+    if isinstance(quiz_response, list):
+        quiz_response = "\n".join(quiz_response)  # Convertir la liste en chaîne de caractères
 
+    quiz_questions = parse_quiz_response(quiz_response)
     if not quiz_questions:
-        return "Erreur dans la génération du quiz.", 500
+        return "Erreur lors du parsing des questions.", 500
 
-    questions_with_indices = [(i, question) for i, question in enumerate(quiz_questions)]
+    session['quiz_questions'] = quiz_questions
 
-    # Passer les questions avec leurs indices au template
     return render_template('quiz1.html', transcription=transcription, questions=quiz_questions)
 
 @app.route('/submit_quiz', methods=['POST'])
 @login_required
 def submit_quiz():
     score = 0
-    answers = {}
+    results = []
 
-    # Vérifier les réponses de l'étudiant
+    transcription_id = request.form.get('transcription_id')
+    if not transcription_id:
+        return "Aucun ID reçu.", 400
+
+    transcription = db.session.get(Transcription, transcription_id)
+    if not transcription:
+        return f"ID invalide : {transcription_id}", 400
+
+    # Récupérer les questions du quiz depuis la session
+    quiz_questions = session.get('quiz_questions')
+    if not quiz_questions:
+        return "Aucun quiz trouvé. Veuillez réessayer.", 400
+
+    # Parcourir les questions du quiz et vérifier les réponses
     for i, question in enumerate(quiz_questions):
         student_answer = request.form.get(f"question_{i}")
-        if student_answer == question['answer']:  # Comparer la réponse de l'étudiant avec la réponse correcte
-            score += 1
-        answers[i] = student_answer
+        correct_answer = question['answer']
 
-    return render_template('quiz_result.html', score=score, total=len(quiz_questions), answers=answers,
-                           questions=quiz_questions)
+        # Stocker les résultats sous forme de dictionnaire
+        results.append({
+            'question_text': question['question'],
+            'choices': question['choices'],
+            'user_answer': student_answer,
+            'correct_answer': correct_answer
+        })
+
+        if student_answer == correct_answer:
+            score += 1
+
+    # Calculer le pourcentage
+    percentage = (score / len(quiz_questions)) * 100
+
+    # Passer les informations de score et pourcentage au template
+    return render_template(
+        'quiz_result.html',
+        transcription=transcription,
+        score=score,
+        total=len(quiz_questions),
+        percentage=percentage,
+        results=results
+    )
 
 @app.route('/generate_summary_pdf/<transcription_id>', methods=['GET'])
 @login_required
@@ -364,6 +446,7 @@ def validate_id():
         return render_template('enter_id.html', transcription=transcription)
     else:
         return "ID invalide. Veuillez réessayer.", 400
+
 
 
 @app.route('/logout')
