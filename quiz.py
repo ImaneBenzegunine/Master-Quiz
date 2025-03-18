@@ -41,8 +41,8 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
-    role = db.Column(db.String(10), nullable=False)  # "prof" ou "etudiant"
-
+    #role = db.Column(db.String(10), nullable=False)  # "prof" ou "etudiant"
+    role = db.Column(db.String(20), nullable=False, default="etudiant")
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
@@ -224,8 +224,9 @@ def register():
         password = request.form.get('password')
         role = request.form.get('role')
 
-        if not role:
+        if not role or role.strip() == "":
             role = "etudiant"
+
         if User.query.filter_by(email=email).first():
             error = "Cet email est déjà utilisé."
         if error:
@@ -261,8 +262,9 @@ def login():
 
         if user.role == "prof":
             return redirect(url_for('record'))
-        else:
+        elif user.role == "None":
             return redirect(url_for('enter_id'))  # Si c'est un étudiant, il doit aller vers enter_id
+        else: return "noooooop"
 
     return render_template("login.html")
 
