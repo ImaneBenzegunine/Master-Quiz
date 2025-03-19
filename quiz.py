@@ -223,10 +223,15 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         role = request.form.get('role')
+        if role is not None :
+            print(f"Le rôle est : {role}")
+        else:
+            print("Aucun rôle spécifié. Le rôle par défaut est 'etudiant'.")
 
-        if not role or role.strip() == "":
-            role = "etudiant"
-
+        
+        if not role or role.strip() == "" or role is None:
+            role = "etudiant" 
+        
         if User.query.filter_by(email=email).first():
             error = "Cet email est déjà utilisé."
         if error:
