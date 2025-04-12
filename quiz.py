@@ -267,7 +267,7 @@ def login():
 
         if user.role == "prof":
             return redirect(url_for('record'))
-        elif user.role == "None":
+        elif user.role == "etudiant":
             return redirect(url_for('enter_id'))  # Si c'est un étudiant, il doit aller vers enter_id
         else: return "noooooop"
 
