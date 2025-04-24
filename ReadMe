@@ -1,0 +1,41 @@
+✅ 1. Create the virtual environment : In your project directory (where your Python files are), run:
+
+python -m venv venv
+
+This creates a virtual environment named venv.
+
+✅ 2. Activate the virtual environment
+
+venv\Scripts\activate
+
+
+✅ 3. Create the requirements.txt file
+Create a requirements.txt file in the same directory with the following contents:
+
+
+Flask==2.3.2
+Flask-SQLAlchemy==3.0.5
+Flask-Login==0.6.2
+Flask-Cors==4.0.0
+Werkzeug==2.3.7
+sounddevice==0.4.6
+wave
+SpeechRecognition==3.10.0
+groq==0.10.0
+reportlab==4.0.4
+
+
+⚠️ Note: wave is part of the Python Standard Library, so you don't need to install it — you can remove it from the file or ignore any warning during installation.
+
+✅ 4. Install the requirements
+Run the following command:
+
+
+pip install -r requirements.txt
+
+
+✅ 5. Run your Flask project
+Once all dependencies are installed, you can start your Flask app (assuming it's in a file like app.py) using:
+
+
+python quiz.py
