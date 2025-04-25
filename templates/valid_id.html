@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ID cours </title>
+    <title>Contenu du cours</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/q.jpg') }}">
     <style>
         body {
@@ -23,7 +23,7 @@
             margin-bottom: 20px;
         }
 
-        form {
+        .content-options {
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
@@ -31,26 +31,9 @@
             width: 100%;
             max-width: 400px;
             text-align: center;
-            margin-bottom: 10px;
         }
 
-        label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #4CAF50;
-        }
-
-        input[type="text"] {
-            width: 95%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        button {
+        .option-button {
             background-color: #4CAF50;
             color: white;
             padding: 10px 20px;
@@ -59,32 +42,18 @@
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s ease;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            width: 80%;
+            margin: 10px 0;
+            text-decoration: none;
+            display: inline-block;
         }
 
-        button:hover {
+        .option-button:hover {
             background-color: #45a049;
         }
 
-        button i {
-            margin-right: 8px;
-        }
-
-        .alert {
-            background-color: #ff9800;
-            color: white;
-            padding: 10px;
-            margin-top: 20px;
-            border-radius: 5px;
-            font-size: 14px;
-            text-align: center;
-            max-width: 400px;
-        }
         .logo {
-            width: 50px; /* Adjust the size of the logo */
+            width: 50px;
             height: 50px;
             margin-right: 10px;
             vertical-align: middle;
@@ -92,15 +61,24 @@
     </style>
 </head>
 <body>
-    <h2> <img src="/static/images/reading.png" class="logo">  Entrer l'ID du cours </h2>
+    <h2><img src="/static/images/reading.png" class="logo"> Contenu du cours</h2>
+    
+    <div class="content-options">
+        <!-- Bouton pour télécharger le résumé PDF -->
+        <a href="{{ url_for('generate_summary_pdf', transcription_id=transcription.id) }}" class="option-button">
+            Télécharger le résumé PDF
+        </a>
 
-    <!-- Formulaire pour entrer l'ID -->
-    <form action="{{ url_for('validate_id') }}" method="POST">
-        <input type="text" id="transcription_id" name="transcription_id" required>
-        <button type="submit">Valider</button>
-    </form>
+        <!-- Bouton pour tester les connaissances avec le quiz -->
+        <a href="{{ url_for('quiz', transcription_id=transcription.id) }}" class="option-button">
+            Tester vos connaissances
+        </a>
+    </div>
+
+    {% if current_user.is_authenticated %}
+        <div style="position: fixed; top: 20px; right: 20px;">
+            <a href="{{ url_for('logout') }}" style="color: #4CAF50; text-decoration: none;">Déconnexion</a>
+        </div>
+    {% endif %}
 </body>
 </html>
-
-
-

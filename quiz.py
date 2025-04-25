@@ -453,19 +453,26 @@ def validate_id():
     if current_user.role != "etudiant":
         return redirect(url_for('home'))
 
-    # Récupérer l'ID de transcription du formulaire
     transcription_id = request.form.get('transcription_id')
-
-    # Récupérer la transcription depuis la base de données
     transcription = db.session.get(Transcription, transcription_id)
 
     if transcription:
-        # Passer la transcription à la vue `enter_id` via `transcription` dans le contexte
-        return render_template('enter_id.html', transcription=transcription)
+        # Redirect to a new page that shows the content
+        return redirect(url_for('show_content', transcription_id=transcription_id))
     else:
         return "ID invalide. Veuillez réessayer.", 400
 
+@app.route('/show_content/<transcription_id>', methods=['GET'])
+@login_required
+def show_content(transcription_id):
+    if current_user.role != "etudiant":
+        return redirect(url_for('home'))
 
+    transcription = db.session.get(Transcription, transcription_id)
+    if not transcription:
+        return "ID invalide. Veuillez réessayer.", 400
+
+    return render_template('valid_id.html', transcription=transcription)
 
 @app.route('/logout')
 @login_required
