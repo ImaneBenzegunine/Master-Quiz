@@ -124,8 +124,9 @@
 <body>
     <h1>Résultats du Quiz</h1>
     <div class="score-summary">
-        <p>Score final : {{ score }}/{{ total }}</p>
-        <p>Pourcentage: {{ percentage|round(2) }}%</p>
+        <p>Pourcentage: {{ percentage|round(0) }}%</p>
+        <a class="result-link" href="{{ url_for('quiz', transcription_id=transcription.id) }}">Reprendre le quiz</a>
+
     </div>
 
     {% for result in results %}
@@ -153,8 +154,7 @@
     </div>
     {% endfor %}
 
-    <a class="result-link" href="{{ url_for('quiz', transcription_id=transcription.id) }}">Reprendre le quiz</a>
-
+    
     {% if current_user.is_authenticated %}
     <div class="logout-container">
         <a class="logout-link" href="{{ url_for('logout') }}">Déconnexion</a>

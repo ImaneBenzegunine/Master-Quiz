@@ -1,9 +1,16 @@
 to add:
-1. the error shown after the record
+1. the error shown after the record 
 2. the score if the student passed
     (
         80%==> Congrats, you passed, increese dopamine, 
         under 80% ==> Retake the quiz
     )
 3. bring up "reprendre le quiz up the quiz"
-4. 
+4. remove the id cours whene recording
+5. remove Score final : 
+6. english
+7. 
+
+>>version 2
+in englsish
+icone language fr, en, de
