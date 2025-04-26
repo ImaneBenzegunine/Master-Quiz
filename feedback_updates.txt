@@ -14,3 +14,4 @@ to add:
 >>version 2
 in englsish
 icone language fr, en, de
+add badg certification
