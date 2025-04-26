@@ -9,7 +9,7 @@ to add:
 4. remove the id cours whene recording
 5. remove Score final : 
 6. english
-7. 
+7. audio to test the app if asked for
 
 >>version 2
 in englsish
