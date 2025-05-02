@@ -124,7 +124,7 @@
 <body>
     <h1>Résultats du Quiz</h1>
     <div class="score-summary">
-        <p>Pourcentage: {{ percentage|round(0) }}%</p>
+        <p>Pourcentage: {{ percentage }}%</p>
         <a class="result-link" href="{{ url_for('quiz', transcription_id=transcription.id) }}">Reprendre le quiz</a>
 
     </div>

@@ -15,3 +15,5 @@ to add:
 in englsish
 icone language fr, en, de
 add badg certification
+each user can collect points, after passing the exam
+make a logo for the data girls
