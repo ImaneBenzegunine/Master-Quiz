@@ -1,4 +1,4 @@
-# Master Quiz 
+# Master Quiz
 
 Master Quiz is an interactive educational platform designed to enhance learning through AI-powered quiz generation. Teachers can create courses via voice recordings, while students engage with automatically generated quizzes and downloadable PDF summaries for effective revision.
 
@@ -139,16 +139,4 @@ coverage report
 ## License
 
 This project is currently not licensed for public use. Please contact the development team if you would like to use or contribute to this project.
-```
 
-This complete version includes:
-1. All sections properly organized
-2. Ready-to-copy code blocks
-3. Consistent Markdown formatting
-4. Fixed repository URL
-5. Complete command references
-6. Clear usage instructions
-7. Team information in table format
-8. License notice
-
-Just copy and paste this entire content into your GitHub repository's README.md file.
