@@ -33,7 +33,7 @@ Master Quiz is an interactive educational platform designed to enhance learning 
 
 1. Clone repository:
    ```bash
-   git clone https://github.com/IlhamBouatioui15/Quiz_master.git
+   https://github.com/ImaneBenzegunine/Master-Quiz.git
    cd Quiz_master
    ```
 
@@ -62,12 +62,7 @@ Master Quiz is an interactive educational platform designed to enhance learning 
    CREATE DATABASE master_quiz;
    ```
 
-6. Create `.env` file with configuration:
-   ```ini
-   SECRET_KEY=your_secret_key_here
-   SQLALCHEMY_DATABASE_URI=mysql+pymysql://username:password@localhost/master_quiz
-   GROQ_API_KEY=your_groq_api_key_here
-   ```
+
 
 ## Commands Reference
 
