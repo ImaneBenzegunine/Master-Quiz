@@ -1,9 +1,6 @@
 # Master Quiz
-
 Master Quiz is an interactive educational platform designed to enhance learning through AI-powered quiz generation. Teachers can create courses via voice recordings, while students engage with automatically generated quizzes and downloadable PDF summaries for effective revision.
-
 ## Key Features
-
 - **Automated Quiz Generation**: Instantly creates MCQs from lecture transcripts
 - **PDF Course Summaries**: Generate and download concise course summaries
 - **Role-Based Access**:
@@ -11,8 +8,8 @@ Master Quiz is an interactive educational platform designed to enhance learning 
   - *Students*: Access courses via ID, take quizzes, view results, and download PDFs
 - **Voice-to-Text Transcription**: Real-time audio recording and transcription
 - **AI Integration**: Utilizes Groq API with llama-3.3-70b model for content generation
-
 ## Technologies Used
+<img width="697" height="227" alt="image" src="https://github.com/user-attachments/assets/551d0136-4871-4e7b-b3ad-f7da17406fe4" />
 
 **Backend**: Python, Flask  
 **Database**: MySQL with SQLAlchemy  
